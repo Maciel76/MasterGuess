@@ -29,6 +29,11 @@ Adivinha+ é um jogo divertido e desafiador de adivinhação! O objetivo é tent
    ```
 3. Abra o arquivo `index.html` no navegador.
 
+4.Acessa o jogo diretamente na web
+
+https://master-guess.vercel.app/
+
+
 ## 🎮 Como Jogar
 
 1. Digite um número entre **1 e 100**.
