@@ -1,4 +1,4 @@
-# 🎯 Adivinha+
+# 🎯 Adivinha+-
 
 Adivinha+ é um jogo divertido e desafiador de adivinhação! O objetivo é tentar descobrir o número secreto entre **1 e 100** antes que suas **10 tentativas** acabem.
 
@@ -21,11 +21,11 @@ Adivinha+ é um jogo divertido e desafiador de adivinhação! O objetivo é tent
 
 1. Clone este repositório:
    ```sh
-   git clone https://github.com/seu-usuario/adivinha-plus.git
+   git clone https://github.com/Maciel76/MasterGuess.git
    ```
 2. Acesse a pasta do projeto:
    ```sh
-   cd adivinha-plus
+   cd.
    ```
 3. Abra o arquivo `index.html` no navegador.
 
@@ -51,8 +51,8 @@ Adivinha+ é um jogo divertido e desafiador de adivinhação! O objetivo é tent
 
 ## 👨‍💻 Autor
 
-Desenvolvido por **Seu Nome**. Qualquer sugestão ou contribuição são bem-vindas! 🚀
+Desenvolvido por **Maciel Ribeiro**. Qualquer sugestão ou contribuição são bem-vindas! 🚀
 
 ---
-Divirta-se jogando **Adivinha+**! 🎯
+Divirta-se jogando **Adivinha+-**! 🎯
 
