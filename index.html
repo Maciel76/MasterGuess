@@ -3,57 +3,1454 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Adivinha+ | Jogo de Adivinhação Moderno</title>
+    <title>Adivinha+ 2.0 | Desafio Infinito</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <link rel="stylesheet" href="style.css" />
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+      :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary: #f59e0b;
+        --accent: #ef4444;
+        --success: #10b981;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --dark: #1f2937;
+        --light: #f8fafc;
+        --glass: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.2);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
+        background-size: 400% 400%;
+        animation: gradientFlow 20s ease infinite;
+        color: white;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      @keyframes gradientFlow {
+        0%,
+        100% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+      }
+
+      /* Overlay de nome */
+      #name-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(10px);
+      }
+
+      .name-container {
+        text-align: center;
+        max-width: 500px;
+        padding: 40px;
+        background: var(--glass);
+        border-radius: 20px;
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .name-container h1 {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        background: linear-gradient(45deg, #f093fb, #f5576c);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        animation: pulse 2s infinite;
+      }
+
+      .name-container p {
+        font-size: 1.2rem;
+        margin-bottom: 30px;
+        opacity: 0.9;
+      }
+
+      .name-input-group {
+        position: relative;
+        margin-bottom: 30px;
+      }
+
+      #player-name {
+        width: 100%;
+        padding: 20px;
+        border: none;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--dark);
+        font-size: 1.2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+
+      #player-name:focus {
+        outline: none;
+        box-shadow: 0 0 20px rgba(240, 147, 251, 0.5);
+        transform: scale(1.05);
+      }
+
+      .start-btn {
+        background: linear-gradient(45deg, var(--primary), var(--secondary));
+        border: none;
+        padding: 15px 40px;
+        border-radius: 50px;
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .start-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Overlay de instruções */
+      #instructions-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1001;
+        backdrop-filter: blur(15px);
+        overflow-y: auto;
+        padding: 20px;
+      }
+
+      .instructions-container {
+        max-width: 700px;
+        width: 100%;
+        margin: auto;
+        padding: 40px;
+        background: linear-gradient(
+          135deg,
+          var(--glass),
+          rgba(255, 255, 255, 0.05)
+        );
+        border-radius: 25px;
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(25px);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .instructions-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          45deg,
+          transparent 30%,
+          rgba(255, 255, 255, 0.03) 50%,
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+
+      .instructions-header {
+        margin-bottom: 30px;
+      }
+
+      .instructions-header i {
+        font-size: 3rem;
+        color: var(--secondary);
+        margin-bottom: 15px;
+        animation: pulse 2s infinite;
+      }
+
+      .instructions-header h2 {
+        font-size: 2.2rem;
+        background: linear-gradient(45deg, #f093fb, #f5576c);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin-bottom: 10px;
+      }
+
+      .intro-text {
+        font-size: 1.3rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 30px;
+        font-style: italic;
+      }
+
+      .rules-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin: 30px 0;
+      }
+
+      .rule-item {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 25px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .rule-item::before {
+        content: "";
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(
+          45deg,
+          var(--primary),
+          var(--secondary),
+          var(--accent)
+        );
+        border-radius: 22px;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .rule-item:hover::before {
+        opacity: 1;
+      }
+
+      .rule-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      .rule-icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
+      }
+
+      .rule-text {
+        text-align: left;
+      }
+
+      .rule-text strong {
+        color: var(--secondary);
+        font-size: 1.1rem;
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .challenge-text {
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        padding: 20px;
+        border-radius: 15px;
+        margin: 30px 0;
+        backdrop-filter: blur(10px);
+      }
+
+      .challenge-text p {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #fef2f2;
+      }
+
+      .challenge-btn {
+        background: linear-gradient(45deg, var(--accent), var(--secondary));
+        border: none;
+        padding: 18px 40px;
+        border-radius: 50px;
+        color: white;
+        font-size: 1.3rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      }
+
+      .challenge-btn:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+      }
+
+      .challenge-btn i {
+        margin-right: 10px;
+        animation: bounce 1s infinite;
+      }
+
+      /* Partículas de fundo */
+      .particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      .particle {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+        animation: float linear infinite;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(100vh) rotate(0deg);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-100px) rotate(360deg);
+          opacity: 0;
+        }
+      }
+
+      /* Container principal do jogo */
+      #game-container {
+        display: none;
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 40px;
+        background: var(--glass);
+        backdrop-filter: blur(20px);
+        border-radius: 25px;
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Header do jogo */
+      .game-header {
+        margin-bottom: 30px;
+      }
+
+      .level-display {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .level-info {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 10px 20px;
+        border-radius: 50px;
+        backdrop-filter: blur(10px);
+      }
+
+      .level-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--secondary);
+      }
+
+      .range-display {
+        font-size: 2rem;
+        font-weight: 800;
+        margin: 20px 0;
+        background: linear-gradient(45deg, #f093fb, #f5576c);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .attempts-display {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .attempts-item {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 10px 15px;
+        border-radius: 15px;
+        backdrop-filter: blur(5px);
+      }
+
+      .attempts-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--success);
+      }
+
+      /* Input e botões */
+      .input-section {
+        margin: 30px 0;
+      }
+
+      #guess-input {
+        width: 100%;
+        padding: 20px;
+        border: none;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--dark);
+        font-size: 1.5rem;
+        text-align: center;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      #guess-input:focus {
+        outline: none;
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        transform: scale(1.02);
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      .game-btn {
+        padding: 15px 30px;
+        border: none;
+        border-radius: 15px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+
+      .submit-btn {
+        background: linear-gradient(45deg, var(--primary), var(--secondary));
+        color: white;
+      }
+
+      .reset-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        display: none;
+      }
+
+      .game-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Chat da IA */
+      .ai-chat {
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 20px;
+        padding: 20px;
+        margin: 30px 0;
+        backdrop-filter: blur(10px);
+        min-height: 80px;
+        display: flex;
+        align-items: center;
+        position: relative;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+      }
+
+      .ai-chat.success {
+        border-color: var(--success);
+        background: rgba(16, 185, 129, 0.1);
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+      }
+
+      .ai-chat.error {
+        border-color: var(--danger);
+        background: rgba(239, 68, 68, 0.1);
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+      }
+
+      .ai-chat.warning {
+        border-color: var(--warning);
+        background: rgba(245, 158, 11, 0.1);
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+      }
+
+      .ai-chat.level-up {
+        border-color: var(--secondary);
+        background: linear-gradient(
+          45deg,
+          rgba(245, 158, 11, 0.1),
+          rgba(99, 102, 241, 0.1)
+        );
+        box-shadow: 0 0 25px rgba(245, 158, 11, 0.3);
+        animation: levelUpPulse 2s ease;
+      }
+
+      @keyframes levelUpPulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        25% {
+          transform: scale(1.02);
+        }
+        75% {
+          transform: scale(1.02);
+        }
+      }
+
+      .ai-message {
+        font-size: 1.1rem;
+        line-height: 1.5;
+        font-style: italic;
+        width: 100%;
+      }
+
+      .ai-message .highlight {
+        color: var(--secondary);
+        font-weight: 700;
+        text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+      }
+
+      .ai-message .player-name {
+        color: var(--accent);
+        font-weight: 700;
+        text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+      }
+
+      .ai-avatar {
+        position: absolute;
+        top: -10px;
+        right: 20px;
+        background: linear-gradient(45deg, var(--accent), var(--secondary));
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+      }
+
+      /* Barra de progresso do nível */
+      .level-progress {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        height: 20px;
+        margin: 20px 0;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--success), var(--secondary));
+        border-radius: 10px;
+        transition: width 0.5s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .progress-fill::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent
+        );
+        animation: shimmer 2s infinite;
+      }
+
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+
+      /* Animações */
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+          transform: translateX(-10px);
+        }
+        20%,
+        40%,
+        60%,
+        80% {
+          transform: translateX(10px);
+        }
+      }
+
+      @keyframes bounce {
+        0%,
+        20%,
+        53%,
+        80%,
+        100% {
+          transform: translateY(0);
+        }
+        40%,
+        43% {
+          transform: translateY(-20px);
+        }
+        70% {
+          transform: translateY(-10px);
+        }
+        90% {
+          transform: translateY(-5px);
+        }
+      }
+
+      @keyframes levelUp {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .shake {
+        animation: shake 0.6s;
+      }
+      .bounce {
+        animation: bounce 0.8s;
+      }
+      .level-up {
+        animation: levelUp 1s;
+      }
+
+      /* Ranking final */
+      .final-stats {
+        display: none;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 20px;
+        padding: 30px;
+        margin-top: 30px;
+        backdrop-filter: blur(10px);
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .stat-item {
+        text-align: center;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 15px;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--secondary);
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin-top: 5px;
+      }
+
+      /* Responsividade */
+      @media (max-width: 768px) {
+        #game-container {
+          margin: 20px;
+          padding: 30px 20px;
+        }
+
+        .name-container {
+          margin: 20px;
+          padding: 30px 20px;
+        }
+
+        .btn-group {
+          flex-direction: column;
+        }
+
+        .level-display {
+          flex-direction: column;
+          gap: 10px;
+        }
+      }
+    </style>
   </head>
   <body>
+    <!-- Partículas de fundo -->
     <div class="particles" id="particles"></div>
 
-    <div id="game-container">
-      <div class="game-header">
-        <i class="fas fa-brain game-icon"></i>
-        <h1>Adivinha<span style="color: var(--secondary)">+</span></h1>
-        <p>Adivinhe o número entre <strong>1</strong> e <strong>100</strong></p>
-        <div class="tooltip">
-          <i class="fas fa-question-circle" style="color: var(--secondary)"></i>
-          <span class="tooltiptext"
-            >Você tem 10 tentativas para adivinhar o número secreto!</span
-          >
+    <!-- Overlay de nome -->
+    <div id="name-overlay">
+      <div class="name-container">
+        <h1><i class="fas fa-brain"></i> Adivinha+ 2.0</h1>
+        <p>Antes de começarmos... preciso saber contra quem estou jogando.</p>
+        <div class="name-input-group">
+          <input
+            type="text"
+            id="player-name"
+            placeholder="Digite seu nome aqui..."
+            maxlength="20"
+          />
         </div>
-      </div>
-
-      <div class="input-group">
-        <input
-          type="number"
-          id="user-input"
-          placeholder="Digite seu palpite..."
-          min="1"
-          max="100"
-        />
-      </div>
-
-      <div class="btn-group">
-        <button id="submit-btn" class="game-btn">
-          <i class="fas fa-paper-plane"></i> Enviar
+        <button class="start-btn" id="start-game">
+          <i class="fas fa-rocket"></i> Aceitar o Desafio
         </button>
-        <button id="reset-btn" class="game-btn" style="display: none">
-          <i class="fas fa-redo"></i> Reiniciar
-        </button>
-      </div>
-
-      <div id="result" class="message"></div>
-      <div id="attempts-left" class="message"></div>
-
-      <div class="progress-container">
-        <div id="progress-bar"></div>
       </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Overlay de instruções -->
+    <div id="instructions-overlay" style="display: none">
+      <div class="instructions-container">
+        <div class="instructions-header">
+          <i class="fas fa-gamepad"></i>
+          <h2>
+            Ola! tudo bem com você <span id="player-name-display"></span>?
+          </h2>
+        </div>
+
+        <div class="instructions-content">
+          <p class="intro-text">
+            Prepare-se para testar seus limites mentais. Este não é um jogo
+            comum...
+          </p>
+
+          <div class="rules-grid">
+            <div class="rule-item">
+              <div class="rule-icon">🎯</div>
+              <div class="rule-text">
+                <strong>Níveis Infinitos</strong><br />
+                Comece adivinhando de 1-10, depois 1-20, 1-30... O céu é o
+                limite!
+              </div>
+            </div>
+
+            <div class="rule-item">
+              <div class="rule-icon">⚡</div>
+              <div class="rule-text">
+                <strong>Sistema de Tentativas</strong><br />
+                10 tentativas por nível + 5 bônus a cada nível que passar!
+              </div>
+            </div>
+
+            <div class="rule-item">
+              <div class="rule-icon">🧠</div>
+              <div class="rule-text">
+                <strong>Teste Mental</strong><br />
+                Cada erro revela suas fraquezas. Cada acerto... pode ser apenas
+                sorte.
+              </div>
+            </div>
+
+            <div class="rule-item">
+              <div class="rule-icon">🏆</div>
+              <div class="rule-text">
+                <strong>Desafio Infinito</strong><br />
+                Vamos ver até onde sua mente consegue ir antes de quebrar...
+              </div>
+            </div>
+          </div>
+
+          <div class="challenge-text">
+            <p>
+              Pense que é esperto o suficiente? vamos ate onde!
+              <strong><span id="player-challenge-name"></span></strong>?
+            </p>
+          </div>
+        </div>
+
+        <button class="challenge-btn" id="accept-challenge">
+          <i class="fas fa-bolt"></i> Aceito o Desafio!
+        </button>
+      </div>
+    </div>
+
+    <!-- Container principal do jogo -->
+    <div id="game-container">
+      <div class="game-header">
+        <div class="level-display">
+          <div class="level-info">
+            <div class="level-number">
+              NÍVEL <span id="current-level">1</span>
+            </div>
+          </div>
+          <div class="level-info">
+            <div>🎯 <span id="target-number">???</span></div>
+          </div>
+        </div>
+
+        <div class="range-display" id="range-display">1 - 10</div>
+
+        <div class="attempts-display">
+          <div class="attempts-item">
+            <div class="attempts-number" id="current-attempts">10</div>
+            <div>Tentativas</div>
+          </div>
+          <div class="attempts-item">
+            <div class="attempts-number" id="total-attempts">0</div>
+            <div>Usadas</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-chat">
+        <div class="ai-message" id="ai-message">
+          Então é você, <span id="player-display"></span>? Espero que sua mente
+          esteja afiada...
+        </div>
+        <div class="ai-avatar"><i class="fas fa-robot"></i></div>
+      </div>
+
+      <div class="input-section">
+        <input
+          type="number"
+          id="guess-input"
+          placeholder="Seu palpite..."
+          min="1"
+        />
+        <div class="btn-group">
+          <button class="game-btn submit-btn" id="submit-guess">
+            <i class="fas fa-paper-plane"></i> Enviar
+          </button>
+          <button class="game-btn reset-btn" id="reset-game">
+            <i class="fas fa-redo"></i> Novo Jogo
+          </button>
+        </div>
+      </div>
+
+      <div class="level-progress">
+        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+      </div>
+
+      <div class="final-stats" id="final-stats">
+        <h3>🏆 Análise Final</h3>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value" id="final-level">0</div>
+            <div class="stat-label">Nível Máximo</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="final-attempts">0</div>
+            <div class="stat-label">Tentativas Usadas</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="efficiency">0%</div>
+            <div class="stat-label">Eficiência</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="final-score">0</div>
+            <div class="stat-label">Pontuação</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      class AdvancedGuessGame {
+        constructor() {
+          this.playerName = "";
+          this.currentLevel = 1;
+          this.currentAttempts = 10;
+          this.totalAttemptsUsed = 0;
+          this.secretNumber = 0;
+          this.maxRange = 10;
+          this.guessesThisLevel = 0;
+          this.isGameActive = false;
+
+          this.initializeElements();
+          this.setupEventListeners();
+          this.createParticles();
+          this.generateSecretNumber();
+        }
+
+        initializeElements() {
+          // Elementos do overlay
+          this.nameOverlay = document.getElementById("name-overlay");
+          this.playerNameInput = document.getElementById("player-name");
+          this.startGameBtn = document.getElementById("start-game");
+
+          // Elementos do overlay de instruções
+          this.instructionsOverlay = document.getElementById(
+            "instructions-overlay"
+          );
+          this.playerNameDisplay = document.getElementById(
+            "player-name-display"
+          );
+          this.playerChallengeNameDisplay = document.getElementById(
+            "player-challenge-name"
+          );
+          this.acceptChallengeBtn = document.getElementById("accept-challenge");
+
+          // Elementos do jogo
+          this.gameContainer = document.getElementById("game-container");
+          this.playerDisplay = document.getElementById("player-display");
+          this.currentLevelEl = document.getElementById("current-level");
+          this.rangeDisplayEl = document.getElementById("range-display");
+          this.currentAttemptsEl = document.getElementById("current-attempts");
+          this.totalAttemptsEl = document.getElementById("total-attempts");
+          this.guessInput = document.getElementById("guess-input");
+          this.submitBtn = document.getElementById("submit-guess");
+          this.resetBtn = document.getElementById("reset-game");
+          this.aiMessage = document.getElementById("ai-message");
+          this.aiChat = document.querySelector(".ai-chat");
+          this.progressFill = document.getElementById("progress-fill");
+          this.targetNumber = document.getElementById("target-number");
+          this.finalStats = document.getElementById("final-stats");
+        }
+
+        setupEventListeners() {
+          this.startGameBtn.addEventListener("click", () =>
+            this.showInstructions()
+          );
+          this.playerNameInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") this.showInstructions();
+          });
+
+          this.acceptChallengeBtn.addEventListener("click", () =>
+            this.startGame()
+          );
+
+          this.submitBtn.addEventListener("click", () => this.makeGuess());
+          this.guessInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") this.makeGuess();
+          });
+
+          this.resetBtn.addEventListener("click", () => this.resetGame());
+        }
+
+        showInstructions() {
+          const name = this.playerNameInput.value.trim();
+          if (!name) {
+            this.shakeElement(this.playerNameInput);
+            return;
+          }
+
+          this.playerName = name;
+          this.playerNameDisplay.textContent = name;
+          this.playerChallengeNameDisplay.textContent = name;
+
+          // Transição do overlay de nome para instruções
+          gsap.to(this.nameOverlay, {
+            duration: 0.8,
+            opacity: 0,
+            scale: 0.9,
+            ease: "power2.inOut",
+            onComplete: () => {
+              this.nameOverlay.style.display = "none";
+              this.instructionsOverlay.style.display = "flex";
+
+              gsap.fromTo(
+                this.instructionsOverlay,
+                { opacity: 0, scale: 0.9 },
+                { duration: 1, opacity: 1, scale: 1, ease: "back.out(1.3)" }
+              );
+            },
+          });
+        }
+
+        createParticles() {
+          const particlesContainer = document.getElementById("particles");
+          for (let i = 0; i < 50; i++) {
+            const particle = document.createElement("div");
+            particle.className = "particle";
+
+            const size = Math.random() * 6 + 2;
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.animationDuration = `${Math.random() * 15 + 10}s`;
+            particle.style.animationDelay = `${Math.random() * 15}s`;
+
+            particlesContainer.appendChild(particle);
+          }
+        }
+
+        startGame() {
+          this.playerDisplay.textContent = this.playerName;
+
+          gsap.to(this.instructionsOverlay, {
+            duration: 1,
+            opacity: 0,
+            scale: 0.8,
+            ease: "power2.inOut",
+            onComplete: () => {
+              this.instructionsOverlay.style.display = "none";
+              this.gameContainer.style.display = "block";
+
+              gsap.fromTo(
+                this.gameContainer,
+                { opacity: 0, y: 50, scale: 0.9 },
+                {
+                  duration: 1,
+                  opacity: 1,
+                  y: 0,
+                  scale: 1,
+                  ease: "back.out(1.7)",
+                }
+              );
+
+              this.isGameActive = true;
+              this.updateDisplay();
+              this.guessInput.focus();
+
+              // Primeira mensagem da IA
+              setTimeout(() => {
+                this.showAIMessage(
+                  `Então é você, <span class="player-name">${this.playerName}</span>? Espero que sua mente esteja afiada...`,
+                  "neutral"
+                );
+              }, 500);
+            },
+          });
+        }
+
+        generateSecretNumber() {
+          this.secretNumber = Math.floor(Math.random() * this.maxRange) + 1;
+          this.guessesThisLevel = 0;
+        }
+
+        calculateMaxRange() {
+          if (this.currentLevel <= 10) {
+            return this.currentLevel * 10;
+          } else {
+            return 200 + (this.currentLevel - 11) * 200;
+          }
+        }
+
+        makeGuess() {
+          if (!this.isGameActive) return;
+
+          const guess = parseInt(this.guessInput.value);
+
+          if (isNaN(guess) || guess < 1 || guess > this.maxRange) {
+            this.showAIMessage(
+              `Sério, <span class="player-name">${this.playerName}</span>? Um número entre <span class="highlight">1 e ${this.maxRange}</span>. Não é tão difícil assim!`,
+              "error"
+            );
+            this.shakeElement(this.guessInput);
+            return;
+          }
+
+          this.currentAttempts--;
+          this.totalAttemptsUsed++;
+          this.guessesThisLevel++;
+
+          // Animação no input a cada tentativa
+          gsap.to(this.guessInput, {
+            duration: 0.2,
+            scale: 0.95,
+            ease: "power2.inOut",
+            yoyo: true,
+            repeat: 1,
+          });
+
+          if (guess === this.secretNumber) {
+            this.handleCorrectGuess();
+          } else if (this.currentAttempts === 0) {
+            this.handleGameOver();
+          } else {
+            this.handleWrongGuess(guess);
+          }
+
+          this.updateDisplay();
+          this.guessInput.value = "";
+          this.guessInput.focus();
+        }
+
+        handleCorrectGuess() {
+          const messages = [
+            `Beleza, <span class="player-name">${this.playerName}</span>... mas até um relógio quebrado acerta duas vezes ao dia.`,
+            `Não se iluda, foi só um golpe de sorte.`,
+            `Ok... você venceu essa. Mas por quanto tempo?`,
+            `Acertou. Agora prove que não foi apenas sorte de principiante.`,
+            `Até que não foi mal... desta vez.`,
+            `Impressionante... não achei que conseguiria.`,
+            `Ok, confesso que não esperava isso de você.`,
+            `Hmm... talvez você seja mais esperto do que imaginei.`,
+          ];
+
+          this.showAIMessage(
+            messages[Math.floor(Math.random() * messages.length)],
+            "success"
+          );
+
+          // Animação de acerto
+          this.celebrateCorrectGuess();
+
+          // Próximo nível
+          setTimeout(() => {
+            this.levelUp();
+          }, 2500);
+        }
+
+        handleWrongGuess(guess) {
+          let hint = guess < this.secretNumber ? "maior" : "menor";
+          let messages = [];
+          let messageType = "error";
+
+          if (this.guessesThisLevel === 1) {
+            messages = [
+              `Você realmente achou que seria tão fácil? O número é <span class="highlight">${hint}</span>.`,
+              `Patético. O número é <span class="highlight">${hint}</span>. Tente de novo... se tiver coragem.`,
+              `O número é <span class="highlight">${hint}</span>. Primeira tentativa... vamos ver se aprende.`,
+              `<span class="highlight">${hint.toUpperCase()}</span>! Esperava melhor logo de cara, <span class="player-name">${
+                this.playerName
+              }</span>.`,
+            ];
+          } else if (this.currentAttempts <= 3) {
+            messages = [
+              `Está errando demais, <span class="player-name">${this.playerName}</span>. A pressão tá te consumindo? O número é <span class="highlight">${hint}</span>.`,
+              `<span class="highlight">${hint.toUpperCase()}</span>! Está ficando sem opções, <span class="player-name">${
+                this.playerName
+              }</span>.`,
+              `O número é <span class="highlight">${hint}</span>. Cuidado, suas chances estão acabando.`,
+              `<span class="highlight">${hint}</span>... você está suando frio agora, não está?`,
+              `Cada erro mostra que você está mais perto do fracasso do que do acerto. O número é <span class="highlight">${hint}</span>.`,
+            ];
+            messageType = "warning";
+          } else if (this.currentAttempts <= 6) {
+            messages = [
+              `Hmm... parece que sua confiança não combina com sua habilidade. O número é <span class="highlight">${hint}</span>.`,
+              `O número é <span class="highlight">${hint}</span>. Continue tentando.`,
+              `<span class="highlight">${hint}</span>! Você consegue fazer melhor que isso.`,
+              `Não foi dessa vez. O número é <span class="highlight">${hint}</span>.`,
+            ];
+          } else {
+            messages = [
+              `O número é <span class="highlight">${hint}</span>. Continue tentando.`,
+              `<span class="highlight">${hint}</span>! Você consegue fazer melhor que isso.`,
+              `Não foi dessa vez. O número é <span class="highlight">${hint}</span>.`,
+              `<span class="highlight">${hint}</span>! Pelo menos está no caminho certo...`,
+            ];
+          }
+
+          this.showAIMessage(
+            messages[Math.floor(Math.random() * messages.length)],
+            messageType
+          );
+          this.shakeElement(this.gameContainer);
+        }
+
+        handleGameOver() {
+          this.isGameActive = false;
+          this.targetNumber.textContent = this.secretNumber;
+
+          const gameOverMessages = [
+            `Derrota total, <span class="player-name">${this.playerName}</span>. Era só um número... e mesmo assim falhou.`,
+            `Fim de jogo. Talvez pensar não seja o seu ponto forte.`,
+            `Fracassou. Mas não se preocupe... a maioria também não consegue.`,
+            `Game Over. O número era <span class="highlight">${this.secretNumber}</span>. Espero que a vergonha não doa tanto.`,
+            `Essa partida expôs suas fraquezas. Vai tentar de novo ou desistir?`,
+            `<span class="player-name">${this.playerName}</span>... nível ${this.currentLevel}? Sério? Esperava mais resistência de você.`,
+            `Que decepção... achei que chegaria mais longe.`,
+          ];
+
+          this.showAIMessage(
+            gameOverMessages[
+              Math.floor(Math.random() * gameOverMessages.length)
+            ],
+            "error"
+          );
+
+          this.showFinalStats();
+          this.submitBtn.style.display = "none";
+          this.resetBtn.style.display = "block";
+
+          // Animação de game over
+          gsap.to(this.gameContainer, {
+            duration: 0.5,
+            scale: 0.98,
+            ease: "power2.inOut",
+            yoyo: true,
+            repeat: 1,
+          });
+        }
+
+        levelUp() {
+          // Tentativas restantes + 5 novas (mudança implementada)
+          this.currentAttempts += 5;
+          this.currentLevel++;
+          this.maxRange = this.calculateMaxRange();
+
+          this.generateSecretNumber();
+          this.guessInput.setAttribute("max", this.maxRange);
+
+          // Animação de level up
+          this.gameContainer.classList.add("level-up");
+          setTimeout(() => {
+            this.gameContainer.classList.remove("level-up");
+          }, 1000);
+
+          // Confetes
+          confetti({
+            particleCount: 150,
+            spread: 80,
+            origin: { y: 0.6 },
+            colors: ["#6366f1", "#f59e0b", "#ef4444", "#10b981", "#8b5cf6"],
+          });
+
+          const levelUpMessages = [
+            `Subiu para o <span class="highlight">nível ${this.currentLevel}</span>... mas agora começa o jogo de verdade.`,
+            `<span class="highlight">Nível ${this.currentLevel}</span>! O próximo passo pode ser seu auge... ou sua queda.`,
+            `Você chegou até aqui, mas já sinto o cheiro da sua derrota se aproximando.`,
+            `Ok, <span class="highlight">nível ${this.currentLevel}</span> desbloqueado. Agora me mostre se consegue sobreviver nele.`,
+            `Você ainda acha que tem chance? Esse nível vai provar o contrário.`,
+            `<span class="highlight">NÍVEL ${this.currentLevel}</span>! Não esperava que chegasse tão longe, <span class="player-name">${this.playerName}</span>.`,
+            `Parabéns pelo <span class="highlight">nível ${this.currentLevel}</span>. Mas agora fica sério...`,
+          ];
+
+          this.showAIMessage(
+            levelUpMessages[Math.floor(Math.random() * levelUpMessages.length)],
+            "level-up"
+          );
+          this.updateDisplay();
+        }
+
+        celebrateCorrectGuess() {
+          // Efeito de bounce no input
+          this.guessInput.classList.add("bounce");
+          setTimeout(() => {
+            this.guessInput.classList.remove("bounce");
+          }, 800);
+
+          // Partículas de sucesso
+          confetti({
+            particleCount: 50,
+            spread: 60,
+            origin: { y: 0.7 },
+            colors: ["#10b981", "#f59e0b"],
+          });
+        }
+
+        shakeElement(element) {
+          element.classList.add("shake");
+          setTimeout(() => {
+            element.classList.remove("shake");
+          }, 600);
+        }
+
+        showAIMessage(message, type = "neutral") {
+          // Remover classes anteriores
+          this.aiChat.className = "ai-chat";
+
+          // Adicionar nova classe baseada no tipo
+          if (type !== "neutral") {
+            this.aiChat.classList.add(type);
+          }
+
+          this.aiMessage.style.opacity = "0";
+          setTimeout(() => {
+            // Definir o HTML diretamente sem efeito de digitação para evitar bugs
+            this.aiMessage.innerHTML = message;
+
+            gsap.to(this.aiMessage, {
+              duration: 0.5,
+              opacity: 1,
+              ease: "power2.out",
+            });
+
+            // Animação extra baseada no tipo
+            if (type === "success") {
+              gsap.to(this.aiChat, {
+                duration: 0.3,
+                scale: 1.02,
+                ease: "back.out(1.7)",
+                yoyo: true,
+                repeat: 1,
+              });
+            } else if (type === "level-up") {
+              gsap.to(this.aiChat, {
+                duration: 0.5,
+                rotationX: 360,
+                ease: "power2.inOut",
+              });
+            }
+          }, 300);
+        }
+
+        updateDisplay() {
+          this.currentLevelEl.textContent = this.currentLevel;
+          this.rangeDisplayEl.textContent = `1 - ${this.maxRange}`;
+          this.currentAttemptsEl.textContent = this.currentAttempts;
+          this.totalAttemptsEl.textContent = this.totalAttemptsUsed;
+
+          // Atualizar barra de progresso
+          const progressPercent = (this.guessesThisLevel / 10) * 100;
+          this.progressFill.style.width = `${Math.min(progressPercent, 100)}%`;
+
+          // Atualizar cor das tentativas baseado na quantidade
+          if (this.currentAttempts <= 3) {
+            this.currentAttemptsEl.style.color = "var(--danger)";
+          } else if (this.currentAttempts <= 6) {
+            this.currentAttemptsEl.style.color = "var(--warning)";
+          } else {
+            this.currentAttemptsEl.style.color = "var(--success)";
+          }
+        }
+
+        showFinalStats() {
+          const efficiency = Math.round(
+            ((this.currentLevel * 10) / this.totalAttemptsUsed) * 100
+          );
+          const score = this.currentLevel * 100 + efficiency * 2;
+
+          document.getElementById("final-level").textContent =
+            this.currentLevel;
+          document.getElementById("final-attempts").textContent =
+            this.totalAttemptsUsed;
+          document.getElementById("efficiency").textContent = `${efficiency}%`;
+          document.getElementById("final-score").textContent = score;
+
+          // Mostrar estatísticas com animação
+          gsap.fromTo(
+            this.finalStats,
+            { opacity: 0, y: 20 },
+            {
+              duration: 1,
+              opacity: 1,
+              y: 0,
+              ease: "back.out(1.7)",
+              delay: 0.5,
+              onStart: () => {
+                this.finalStats.style.display = "block";
+              },
+            }
+          );
+
+          // Análise psicológica final
+          setTimeout(() => {
+            let finalAnalysis = "";
+
+            if (this.currentLevel >= 20) {
+              finalAnalysis = `${this.playerName}, você é um gênio! Chegar ao nível ${this.currentLevel} é coisa de poucos. Meu respeito.`;
+            } else if (this.currentLevel >= 15) {
+              finalAnalysis = `Impressionante, ${this.playerName}! Nível ${this.currentLevel} é um feito admirável. Você tem potencial.`;
+            } else if (this.currentLevel >= 10) {
+              finalAnalysis = `Não foi mal, ${this.playerName}. Nível ${this.currentLevel} é respeitável, mas sei que pode fazer melhor.`;
+            } else if (this.currentLevel >= 5) {
+              finalAnalysis = `${this.playerName}, chegou ao nível ${this.currentLevel}. É um começo, mas tem muito a melhorar.`;
+            } else {
+              finalAnalysis = `${this.playerName}... nível ${this.currentLevel}? Sério? Esperava mais resistência de você.`;
+            }
+
+            if (efficiency >= 80) {
+              finalAnalysis +=
+                " Sua eficiência foi excepcional - você é preciso como um laser!";
+            } else if (efficiency >= 60) {
+              finalAnalysis += " Boa eficiência, você pensa antes de agir.";
+            } else if (efficiency >= 40) {
+              finalAnalysis +=
+                " Eficiência mediana... trabalhe sua estratégia.";
+            } else {
+              finalAnalysis +=
+                " Sua eficiência foi... questionável. Muitos chutes no escuro.";
+            }
+
+            this.showAIMessage(finalAnalysis);
+          }, 2000);
+        }
+
+        resetGame() {
+          // Reset de todas as variáveis
+          this.currentLevel = 1;
+          this.currentAttempts = 10;
+          this.totalAttemptsUsed = 0;
+          this.maxRange = 10;
+          this.guessesThisLevel = 0;
+          this.isGameActive = true;
+
+          // Reset da interface
+          this.generateSecretNumber();
+          this.guessInput.setAttribute("max", this.maxRange);
+          this.targetNumber.textContent = "???";
+          this.finalStats.style.display = "none";
+          this.submitBtn.style.display = "block";
+          this.resetBtn.style.display = "none";
+          this.progressFill.style.width = "0%";
+
+          this.updateDisplay();
+          this.showAIMessage(
+            `Então quer uma revanche, <span class="player-name">${this.playerName}</span>? Vamos ver se aprendeu alguma coisa...`,
+            "neutral"
+          );
+
+          // Animação de reset
+          gsap.fromTo(
+            this.gameContainer,
+            { scale: 0.9, opacity: 0.7 },
+            { duration: 0.8, scale: 1, opacity: 1, ease: "back.out(1.7)" }
+          );
+
+          this.guessInput.focus();
+        }
+      }
+
+      // Inicializar o jogo quando a página carregar
+      window.addEventListener("load", () => {
+        new AdvancedGuessGame();
+      });
+    </script>
   </body>
 </html>
